@@ -70,7 +70,7 @@ int main() {
     //CL_MEM_USE_HOST_PTR
     Buffer textBuffer = Buffer(context, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, size, &hostTxt);
 
-    CommandQueue commandQueue(context, targetDevice);
+    CommandQueue commandQueue(context, targetDevice, CL_QUEUE_PROFILING_ENABLE);
 
     // Create kernel with name of kernel function see 'hello_kernel.cl'
     Kernel kernel(program, "say_hello");
@@ -80,6 +80,12 @@ int main() {
     Event event;
     commandQueue.enqueueNDRangeKernel(kernel, NullRange, NDRange(count), NDRange(1), NULL, &event);
     event.wait();
+
+    unsigned long start_time = event.getProfilingInfo<CL_PROFILING_COMMAND_START>();
+    unsigned long end_time = event.getProfilingInfo<CL_PROFILING_COMMAND_END>();
+    double milliseconds = ((double) end_time - (double) start_time) / 1000000.0;
+
+    cout << "OpenCl Execution time is: " << milliseconds << " ms" << endl;
 
 
     // read the text buffer from queue
