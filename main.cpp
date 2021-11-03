@@ -3,9 +3,11 @@
  * Date : 07/10/2021
  * Email : abdelmajid.idali@gmail.com
  */
+#define  CL_HPP_MINIMUM_OPENCL_VERSION 120
+#define  CL_HPP_TARGET_OPENCL_VERSION 120
 
 #include <iostream>
-#include <CL/opencl.hpp>
+#include <CL/cl2.hpp>
 #include <fstream>
 
 using namespace cl;
@@ -40,8 +42,15 @@ int main() {
 
     Program program = Program(context, source);
 
-    if (program.build(targetDevice) != CL_SUCCESS) {
+    if (program.build(devices) != CL_SUCCESS) {
         cout << "Failed to build source file (" << path << ")" << endl;
+        auto log = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>();
+
+        if (!log.empty()) {
+            for (const auto &item: log) {
+                cout << "Log : " << item.first.getInfo<CL_DEVICE_NAME>() << " : " << item.second.c_str() << endl;
+            }
+        }
         exit(1);
     }
 
